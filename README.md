@@ -33,10 +33,14 @@ npm test
 
 ### 部署到 GitHub Pages
 
-1. 本地执行 `git push -u origin main`（或运行 `push-to-github.ps1`）
-2. 打开 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**
-3. push 后 `.github/workflows/deploy-pages.yml` 会自动构建并发布 `web/dist`
-4. 访问 https://iig64625-bot.github.io/Match-3-Puzzle/
+1. 本地执行 `git push`（或双击 `push-to-github.cmd`）
+2. 打开 **Settings → Pages → Build and deployment**
+3. **Source** 选 **Deploy from a branch**
+4. **Branch** 选 `gh-pages` · 文件夹选 **`/ (root)`** → Save
+5. 等 Actions 里 `Deploy Web to GitHub Pages` 跑绿（约 1 分钟）
+6. 访问 https://iig64625-bot.github.io/Match-3-Puzzle/
+
+> 仓库需为 **Public**，免费账号才能使用 GitHub Pages。
 
 ---
 

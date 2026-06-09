@@ -147,9 +147,12 @@ npm run preview
 
 ### GitHub Pages
 
-仓库根目录已含 `.github/workflows/deploy-pages.yml`。在 GitHub **Settings → Pages** 中选择 **GitHub Actions** 作为来源，push 到 `main` 后自动发布。
+push 到 `main` 后，Actions 会把 `web/dist` 推到 **`gh-pages` 分支**。
 
-> 构建时 `VITE_BASE_PATH` 会设为 `/<仓库名>/`，确保静态资源路径正确。
+在 GitHub **Settings → Pages** 中：
+
+- **Source**：Deploy from a branch  
+- **Branch**：`gh-pages` · **`/ (root)`**
 
 ---
 
