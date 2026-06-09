@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>RuneMind AI — Match-3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@600;700&display=swap" rel="stylesheet" />
+    <script type="module" crossorigin src="/Match-3-Puzzle/assets/index-BSRKn7IQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/Match-3-Puzzle/assets/index-DkGnHgxz.css">
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="top-hud">
+        <div class="logo-row">
+          <h1 class="logo">RuneMind AI</h1>
+          <div class="header-actions">
+            <button id="btn-star-guide" class="icon-btn" type="button" aria-label="星级说明" title="星级说明">⭐</button>
+            <button id="btn-tutorial" class="icon-btn" type="button" aria-label="新手教程" title="新手教程">📖</button>
+            <button id="btn-sound" class="sound-btn" type="button" aria-label="切换音效">🔊</button>
+          </div>
+        </div>
+        <div class="hud-stats">
+          <p id="level-text" class="hud-line">Level 1</p>
+          <p id="score-text" class="hud-line">Score 0 / 1000</p>
+          <p id="moves-text" class="hud-line">Total 0</p>
+          <p id="leaderboard-text" class="hud-line hud-sub">Best —</p>
+        </div>
+      </header>
+
+      <div class="play-area">
+        <main class="board-wrap">
+          <canvas id="game-canvas" aria-label="Match-3 board"></canvas>
+        </main>
+
+        <footer class="bottom-bar">
+          <button id="btn-hint" class="action-btn" type="button">提示</button>
+          <button id="btn-auto" class="action-btn" type="button">自动</button>
+          <button id="btn-restart" class="action-btn" type="button">重来</button>
+        </footer>
+      </div>
+
+      <div id="star-guide-modal" class="star-guide-modal hidden" role="dialog" aria-modal="true" aria-labelledby="star-guide-title">
+        <div class="star-guide-card">
+          <h2 id="star-guide-title" class="star-guide-title">星级评定说明</h2>
+          <div id="star-guide-body" class="star-guide-body"></div>
+          <button id="star-guide-close" class="star-guide-close" type="button">知道了</button>
+        </div>
+      </div>
+
+      <div id="level-modal" class="level-modal hidden" role="dialog" aria-modal="true" aria-labelledby="level-modal-title">
+        <div class="level-modal-card">
+          <div class="level-modal-glow"></div>
+          <p class="level-modal-badge">LEVEL CLEAR</p>
+          <div id="level-modal-stars" class="level-modal-stars" aria-label="关卡星级"></div>
+          <h2 id="level-modal-title" class="level-modal-title">第 1 关完成！</h2>
+          <p id="level-modal-sub" class="level-modal-sub">进入第 2 关</p>
+          <button id="level-modal-btn" class="level-modal-btn" type="button">继续挑战</button>
+        </div>
+      </div>
+
+      <div id="tutorial-overlay" class="tutorial-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div id="tutorial-card" class="tutorial-card">
+          <p id="tutorial-step-label" class="tutorial-step-label">1 / 10</p>
+          <h2 id="tutorial-title" class="tutorial-title">欢迎来到 RuneMind</h2>
+          <p id="tutorial-body" class="tutorial-body"></p>
+          <ul id="tutorial-tips" class="tutorial-tips"></ul>
+          <div class="tutorial-actions">
+            <button id="tutorial-skip" class="tutorial-btn tutorial-btn--ghost" type="button">跳过</button>
+            <button id="tutorial-prev" class="tutorial-btn tutorial-btn--ghost" type="button">上一步</button>
+            <button id="tutorial-next" class="tutorial-btn tutorial-btn--primary" type="button">下一步</button>
+          </div>
+          <div id="tutorial-dots" class="tutorial-dots"></div>
+        </div>
+      </div>
+      <p id="tutorial-practice-hint" class="tutorial-practice-hint hidden"></p>
+
+      <p id="status-text" class="status-text"></p>
+    </div>
+  </body>
+</html>
