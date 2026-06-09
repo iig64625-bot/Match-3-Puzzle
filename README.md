@@ -9,8 +9,8 @@
 | AI 协作 | Cursor Agent | 跨语言移植、UI 迭代、资产生成、工程清理 |
 | 质量门禁 | Vitest + GitHub Actions | 核心规则自动化测试，push 自动 build |
 
-> **在线 Demo**（推送到 GitHub 并开启 Pages 后可用）：  
-> `https://<你的用户名>.github.io/<仓库名>/`
+> **仓库**：https://github.com/iig64625-bot/Match-3-Puzzle  
+> **在线 Demo**（push 并开启 Pages 后）：https://iig64625-bot.github.io/Match-3-Puzzle/
 
 ---
 
@@ -33,10 +33,10 @@ npm test
 
 ### 部署到 GitHub Pages
 
-1. 将仓库推到 GitHub（默认分支 `main` 或 `master`）
+1. 本地执行 `git push -u origin main`（或运行 `push-to-github.ps1`）
 2. 打开 **Settings → Pages → Build and deployment → Source** 选 **GitHub Actions**
 3. push 后 `.github/workflows/deploy-pages.yml` 会自动构建并发布 `web/dist`
-4. 访问 `https://<用户名>.github.io/<仓库名>/`
+4. 访问 https://iig64625-bot.github.io/Match-3-Puzzle/
 
 ---
 
