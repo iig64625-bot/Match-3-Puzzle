@@ -1,0 +1,7 @@
+Art assets go here. See web/README.md for filenames.
+
+Runes: fire.png, water.png, nature.png, lightning.png, light.png, shadow.png
+Background: ../bg_main.png
+Frame: ../board_frame.png
+
+If missing, the game uses colored fallback gems.

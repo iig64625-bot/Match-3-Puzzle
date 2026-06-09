@@ -1,0 +1,21 @@
+# Build
+bin/
+obj/
+web/dist/
+
+# Dependencies
+web/node_modules/
+
+# IDE / OS
+.vs/
+.idea/
+*.user
+Thumbs.db
+.DS_Store
+
+# Runtime / local data
+highscores.txt
+
+# Env
+.env
+.env.*

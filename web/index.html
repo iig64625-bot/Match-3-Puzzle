@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>RuneMind AI — Match-3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Nunito:wght@600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="top-hud">
+        <h1 class="logo">RuneMind AI</h1>
+        <div class="hud-stats">
+          <p id="level-text" class="hud-line">Level 1</p>
+          <p id="score-text" class="hud-line">Score 0 / 1000</p>
+          <p id="moves-text" class="hud-line">Total 0</p>
+          <p id="leaderboard-text" class="hud-line hud-sub">Best —</p>
+        </div>
+      </header>
+
+      <main class="board-wrap">
+        <canvas id="game-canvas" aria-label="Match-3 board"></canvas>
+      </main>
+
+      <footer class="bottom-bar">
+        <button id="btn-hint" class="action-btn" type="button">Hint</button>
+        <button id="btn-auto" class="action-btn" type="button">Auto</button>
+        <button id="btn-restart" class="action-btn" type="button">Restart</button>
+      </footer>
+
+      <p id="status-text" class="status-text"></p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
