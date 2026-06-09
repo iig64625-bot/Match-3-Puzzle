@@ -176,14 +176,14 @@ describe("MoveFinder", () => {
 });
 
 describe("levelProgression", () => {
-  it("grows board and element count by level", () => {
+  it("keeps 6x6 board and grows element count by level", () => {
     const config = { ...DEFAULT_CONFIG };
     applyLevelToConfig(config, 1);
     expect(config.boardWidth).toBe(6);
     expect(config.elementTypes).toBe(3);
 
     applyLevelToConfig(config, 5);
-    expect(config.boardWidth).toBe(8);
+    expect(config.boardWidth).toBe(6);
     expect(config.elementTypes).toBe(5);
     expect(config.levelTargetScore).toBe(400 + 5 * 350);
   });

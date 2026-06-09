@@ -44,8 +44,8 @@ export interface GameConfig {
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
-  boardWidth: 8,
-  boardHeight: 8,
+  boardWidth: 6,
+  boardHeight: 6,
   elementTypes: 4,
   minMatchCount: 3,
   baseScore: 10,

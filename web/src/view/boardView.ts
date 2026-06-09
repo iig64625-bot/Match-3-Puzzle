@@ -6,11 +6,30 @@ import {
   cellAt,
   computeBoardLayout,
   pieceAt,
-  snapFrameRect,
 } from "./boardLayout";
+import { EffectLayer } from "./effects";
+import { AlchemyBoardTheme, createAlchemyTheme, drawAlchemyBoard } from "./proceduralBoard";
 
-/** 程序生成模式下显示格子线 */
-const SHOW_PROCEDURAL_GRID = !USE_CUSTOM_ART;
+export interface PieceVisual {
+  col: number;
+  row: number;
+  type: PieceType;
+  offsetX: number;
+  offsetY: number;
+  alpha: number;
+  scale: number;
+  rotation?: number;
+}
+
+export interface BoardVisualState {
+  width: number;
+  height: number;
+  pieces: PieceVisual[];
+  highlight: GridPos[];
+  pulseT: number;
+  levelFlash: number;
+  effects?: EffectLayer;
+}
 
 export class BoardView {
   private readonly canvas: HTMLCanvasElement;
@@ -18,6 +37,7 @@ export class BoardView {
   private readonly assets: AssetLoader;
   private layout: BoardLayout;
   private highlight: GridPos[] = [];
+  private boardTheme: AlchemyBoardTheme = createAlchemyTheme(1, 3);
 
   constructor(canvas: HTMLCanvasElement, assets: AssetLoader) {
     this.canvas = canvas;
@@ -34,6 +54,14 @@ export class BoardView {
 
   clearHighlight(): void {
     this.highlight = [];
+  }
+
+  getLayout(): BoardLayout {
+    return this.layout;
+  }
+
+  setDifficulty(level: number, elementTypes: number): void {
+    this.boardTheme = createAlchemyTheme(level, elementTypes);
   }
 
   resize(width: number, height: number, columns: number, rows: number): void {
@@ -64,144 +92,117 @@ export class BoardView {
   }
 
   render(board: Board): void {
-    const w = this.layout.canvasW;
-    const h = this.layout.canvasH;
-    this.ctx.clearRect(0, 0, w, h);
-
-    this.drawBackground(w, h);
-
-    if (SHOW_PROCEDURAL_GRID) {
-      this.drawProceduralGrid();
-    }
-
-    this.drawPieces(board);
-    this.drawHighlights();
-    this.drawBoardFrame();
-  }
-
-  private drawPieces(board: Board): void {
-    this.ctx.save();
-    this.clipGrid();
-
+    const pieces: PieceVisual[] = [];
     for (let row = 0; row < board.height; row++) {
       for (let col = 0; col < board.width; col++) {
         const type = board.getPiece(gridPos(col, row));
         if (type === PieceType.None) continue;
+        pieces.push({
+          col,
+          row,
+          type,
+          offsetX: 0,
+          offsetY: 0,
+          alpha: 1,
+          scale: 1,
+          rotation: 0,
+        });
+      }
+    }
+    this.renderVisual({
+      width: board.width,
+      height: board.height,
+      pieces,
+      highlight: this.highlight,
+      pulseT: 0,
+      levelFlash: 0,
+    });
+  }
 
-        const cell = cellAt(this.layout, col, row);
-        const target = pieceAt(this.layout, col, row);
+  renderVisual(state: BoardVisualState): void {
+    const w = this.layout.canvasW;
+    const h = this.layout.canvasH;
+    this.ctx.clearRect(0, 0, w, h);
 
-        const specialPiece = this.assets.getSpecialPiece(type);
-        if (specialPiece) {
-          drawPieceImage(this.ctx, specialPiece, target);
+    const hasBg = !!this.assets.background;
+    if (!hasBg) {
+      this.ctx.fillStyle = "#120a24";
+      this.ctx.fillRect(0, 0, w, h);
+    }
+
+    drawAlchemyBoard(this.ctx, this.layout, this.boardTheme, w, h, hasBg);
+
+    this.drawVisualPieces(state.pieces);
+    this.drawHighlights(state.highlight, state.pulseT);
+
+    if (state.levelFlash > 0) {
+      this.ctx.save();
+      this.ctx.fillStyle = `rgba(245, 215, 140, ${state.levelFlash * 0.35})`;
+      this.ctx.fillRect(0, 0, w, h);
+      this.ctx.restore();
+    }
+
+    state.effects?.render(this.ctx);
+  }
+
+  private drawVisualPieces(pieces: PieceVisual[]): void {
+    this.ctx.save();
+    this.clipGrid();
+
+    for (const pv of pieces) {
+      const cell = cellAt(this.layout, pv.col, pv.row);
+      const target = pieceAt(this.layout, pv.col, pv.row);
+      const cx = target.x + target.width / 2;
+      const cy = target.y + target.height / 2;
+
+      this.ctx.save();
+      this.ctx.globalAlpha = pv.alpha;
+      this.ctx.translate(cx + pv.offsetX, cy + pv.offsetY);
+
+      // 支持旋转（销毁动画）
+      if (pv.rotation) {
+        this.ctx.rotate((pv.rotation * Math.PI) / 180);
+      }
+
+      this.ctx.scale(pv.scale, pv.scale);
+      this.ctx.translate(-cx, -cy);
+
+      const specialPiece = this.assets.getSpecialPiece(pv.type);
+      if (specialPiece) {
+        drawPieceImage(this.ctx, specialPiece, target);
+        this.ctx.restore();
+        continue;
+      }
+
+      if (USE_CUSTOM_ART) {
+        const image = this.assets.getRune(pv.type);
+        if (image) {
+          drawRuneExact(this.ctx, image, target);
+          this.ctx.restore();
           continue;
         }
-
-        if (USE_CUSTOM_ART) {
-          const image = this.assets.getRune(type);
-          if (image) {
-            drawRuneExact(this.ctx, image, target);
-            continue;
-          }
-        }
-
-        drawPieceFallback(this.ctx, type, cell);
       }
+
+      drawPieceFallback(this.ctx, pv.type, cell);
+      this.ctx.restore();
     }
 
     this.ctx.restore();
   }
 
-  private drawBoardFrame(): void {
-    if (USE_CUSTOM_ART && this.assets.boardFrame) {
-      const frame = snapFrameRect(this.layout.frame);
-      this.ctx.drawImage(
-        this.assets.boardFrame,
-        frame.x,
-        frame.y,
-        frame.width,
-        frame.height,
-      );
-      return;
-    }
+  private drawHighlights(cells: GridPos[], pulseT: number): void {
+    if (cells.length === 0) return;
 
-    this.drawProceduralFrame();
-  }
-
-  private drawBackground(w: number, h: number): void {
-    if (USE_CUSTOM_ART && this.assets.background) {
-      this.ctx.drawImage(this.assets.background, 0, 0, w, h);
-      this.ctx.fillStyle = "rgba(10, 8, 24, 0.22)";
-      this.ctx.fillRect(0, 0, w, h);
-      return;
-    }
-
-    const gradient = this.ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, "#1a1035");
-    gradient.addColorStop(0.5, "#2d1b4e");
-    gradient.addColorStop(1, "#0f172a");
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, w, h);
-  }
-
-  /** 程序生成的金边外框 */
-  private drawProceduralFrame(): void {
-    const frame = snapFrameRect(this.layout.frame);
-    this.ctx.save();
-    this.ctx.strokeStyle = "rgba(255, 215, 140, 0.55)";
-    this.ctx.lineWidth = 4;
-    this.ctx.shadowColor = "rgba(255, 200, 100, 0.35)";
-    this.ctx.shadowBlur = 12;
-    roundRect(this.ctx, frame.x, frame.y, frame.width, frame.height, 16);
-    this.ctx.stroke();
-    this.ctx.restore();
-  }
-
-  /** 程序生成的格子线 */
-  private drawProceduralGrid(): void {
-    const { grid, cellSize, spacing, cells } = this.layout;
-    this.ctx.save();
-    this.ctx.strokeStyle = "rgba(255,255,255,0.15)";
-    this.ctx.lineWidth = 1;
-
-    for (let col = 1; col < cells[0].length; col++) {
-      const lx = grid.x + col * cellSize + (col - 0.5) * spacing;
-      this.ctx.beginPath();
-      this.ctx.moveTo(lx, grid.y);
-      this.ctx.lineTo(lx, grid.y + grid.height);
-      this.ctx.stroke();
-    }
-
-    for (let row = 1; row < cells.length; row++) {
-      const ly = grid.y + row * cellSize + (row - 0.5) * spacing;
-      this.ctx.beginPath();
-      this.ctx.moveTo(grid.x, ly);
-      this.ctx.lineTo(grid.x + grid.width, ly);
-      this.ctx.stroke();
-    }
-
-    for (let row = 0; row < cells.length; row++) {
-      for (let col = 0; col < cells[row].length; col++) {
-        const cell = cellAt(this.layout, col, row);
-        this.ctx.strokeStyle = "rgba(255,255,255,0.08)";
-        this.ctx.strokeRect(cell.x + 0.5, cell.y + 0.5, cell.width - 1, cell.height - 1);
-      }
-    }
-
-    this.ctx.restore();
-  }
-
-  private drawHighlights(): void {
-    if (this.highlight.length === 0) return;
+    const pulse = 0.55 + Math.sin(pulseT) * 0.45;
 
     this.ctx.save();
     this.clipGrid();
-    this.ctx.strokeStyle = "#ffe08a";
-    this.ctx.lineWidth = 2;
+    this.ctx.strokeStyle = `rgba(255, 224, 138, ${pulse})`;
+    this.ctx.lineWidth = 2.5;
     this.ctx.shadowColor = "#ffd060";
-    this.ctx.shadowBlur = 8;
+    this.ctx.shadowBlur = 10 + Math.sin(pulseT) * 4;
 
-    for (const pos of this.highlight) {
+    for (const pos of cells) {
       const cell = cellAt(this.layout, pos.x, pos.y);
       const inset = 2;
       roundRect(

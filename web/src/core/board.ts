@@ -101,14 +101,22 @@ export class Board {
   }
 
   fillEmpty(): void {
+    this.fillEmptyRecorded();
+  }
+
+  fillEmptyRecorded(): import("./animSteps").SpawnCell[] {
+    const spawns: import("./animSteps").SpawnCell[] = [];
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
         const pos = gridPos(x, y);
         if (this.getPiece(pos) === PieceType.None) {
-          this.setPiece(pos, this.rollSpawnType());
+          const piece = this.rollSpawnType();
+          this.setPiece(pos, piece);
+          spawns.push({ pos, piece });
         }
       }
     }
+    return spawns;
   }
 
   placeIceCells(count: number): void {

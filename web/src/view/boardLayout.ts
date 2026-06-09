@@ -2,8 +2,8 @@
  * 程序生成布局（无自定义图片时的基准坐标系）。
  * 用户 board_frame / runes 必须 1:1 覆盖到这些矩形上。
  */
-export const GRID_COLUMNS = 8;
-export const GRID_ROWS = 8;
+export const GRID_COLUMNS = 6;
+export const GRID_ROWS = 6;
 
 /** 格子间距（px），越小格子越紧密 */
 export const BASE_SPACING = 0;
@@ -18,7 +18,7 @@ export const PIECE_VISUAL_FILL = 0.92;
 export const GRID_FILL_RATIO = 0.92;
 
 /** 单格最大边长（px） */
-export const MAX_CELL_SIZE = 96;
+export const MAX_CELL_SIZE = 68;
 
 /** 棋盘外框相对网格的 padding */
 export const FRAME_PAD_RATIO = 0.12;
@@ -45,8 +45,8 @@ export interface BoardLayout {
 export function computeBoardLayout(
   canvasW: number,
   canvasH: number,
-  columns = 8,
-  rows = 8,
+  columns = GRID_COLUMNS,
+  rows = GRID_ROWS,
 ): BoardLayout {
   const spacing = BASE_SPACING;
   const maxGridW = canvasW * GRID_FILL_RATIO;

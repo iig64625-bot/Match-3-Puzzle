@@ -1,3 +1,4 @@
+import { AnimStep } from "./animSteps";
 import { Board } from "./board";
 import { Eliminator } from "./eliminator";
 import { applyLevelToConfig } from "./levelProgression";
@@ -10,6 +11,11 @@ import {
   GridPos,
   gridPosEquals,
 } from "./types";
+
+export interface SwapPlayback {
+  steps: AnimStep[];
+  success: boolean;
+}
 
 export class Game {
   private config: GameConfig;
@@ -55,54 +61,96 @@ export class Game {
   }
 
   trySwap(a: GridPos, b: GridPos): boolean {
-    if (this.state !== GameStateType.Playing) return false;
+    return this.trySwapWithSteps(a, b).success;
+  }
+
+  trySwapWithSteps(a: GridPos, b: GridPos): SwapPlayback {
+    const steps: AnimStep[] = [];
+    if (this.state !== GameStateType.Playing) return { steps, success: false };
     if (!this.board.isValid(a) || !this.board.isValid(b) || !isAdjacent(a, b)) {
-      return false;
+      return { steps, success: false };
     }
     if (!canSwap(this.board.getPiece(a)) || !canSwap(this.board.getPiece(b))) {
-      return false;
+      return { steps, success: false };
     }
 
     this.board.swap(a, b);
+    steps.push({ type: "swap", a, b });
 
     if (this.matcher.findAllMatches().size === 0) {
       this.board.swap(a, b);
-      return false;
+      steps.length = 0;
+      steps.push({ type: "shake", a, b });
+      return { steps, success: false };
     }
 
     this.state = GameStateType.Processing;
-    this.processTurn();
-    return true;
+    this.processTurnSteps(steps);
+    return { steps, success: true };
   }
 
   private processTurn(): void {
+    this.processTurnSteps([]);
+  }
+
+  private processTurnSteps(steps: AnimStep[]): void {
+    let combo = 0;
     while (true) {
       const matches = this.matcher.findAllMatches();
       if (matches.size === 0) break;
-      const points = this.eliminator.processMatches(matches);
-      this.addScore(points);
-      if (this.state === GameStateType.LevelComplete) return;
-    }
-
-    if (this.score >= this.config.levelTargetScore) {
-      this.completeLevel();
-      return;
+      combo++;
+      const resolution = this.eliminator.resolveMatches(matches);
+      if (steps.length > 0) {
+        steps.push({
+          type: "clear",
+          cells: resolution.cleared,
+          pieces: resolution.pieces,
+          hasBomb: resolution.hasBomb,
+          iceCells: resolution.iceCells,
+        });
+        if (resolution.fallMoves.length > 0) {
+          steps.push({ type: "fall", moves: resolution.fallMoves });
+        }
+        if (resolution.spawns.length > 0) {
+          steps.push({ type: "spawn", spawns: resolution.spawns });
+        }
+        steps.push({ type: "score", points: resolution.points, combo });
+      }
+      const scoreResult = this.addScore(resolution.points);
+      if (scoreResult.completed && steps.length > 0) {
+        steps.push({
+          type: "levelComplete",
+          level: this.level,
+          levelScore: scoreResult.levelScore!,
+          targetScore: scoreResult.targetScore!,
+        });
+        return;
+      }
     }
 
     if (!this.matcher.hasValidMoves()) {
       this.state = GameStateType.GameOver;
+      if (steps.length > 0) steps.push({ type: "gameOver" });
       return;
     }
 
     this.state = GameStateType.Playing;
   }
 
-  private addScore(points: number): void {
+  private addScore(points: number): {
+    completed: boolean;
+    levelScore?: number;
+    targetScore?: number;
+  } {
     this.score += points;
     this.totalScore += points;
     if (this.score >= this.config.levelTargetScore) {
+      const levelScore = this.score;
+      const targetScore = this.config.levelTargetScore;
       this.completeLevel();
+      return { completed: true, levelScore, targetScore };
     }
+    return { completed: false };
   }
 
   private completeLevel(): void {

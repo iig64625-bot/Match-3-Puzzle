@@ -18,7 +18,7 @@ export interface LoadedPieceImage {
 }
 
 /** false = 纯程序生成界面；true = 加载 public/assets 下的用户图片 */
-export const USE_CUSTOM_ART = false;
+export const USE_CUSTOM_ART = true;
 
 /** Vite base，GitHub Pages 为 /Match-3-Puzzle/，本地为 / */
 function assetUrl(relativePath: string): string {
@@ -42,13 +42,12 @@ const SPECIAL_PATHS: Partial<Record<PieceType, string>> = {
 };
 
 const BG_PATH = assetUrl("assets/bg_main.png");
-const FRAME_PATH = assetUrl("assets/board_frame.png");
 
+/** 始终加载用户背景；不使用 board_frame 贴图 */
 export class AssetLoader {
   readonly runes = new Map<PieceType, HTMLImageElement>();
   readonly specialPieces = new Map<PieceType, LoadedPieceImage>();
   background: HTMLImageElement | null = null;
-  boardFrame: HTMLImageElement | null = null;
   private loaded = false;
 
   async loadAll(): Promise<void> {
@@ -68,6 +67,12 @@ export class AssetLoader {
       );
     }
 
+    loads.push(
+      loadOptionalImage(BG_PATH).then((img) => {
+        this.background = img;
+      }),
+    );
+
     if (USE_CUSTOM_ART) {
       for (const type of [
         PieceType.Fire,
@@ -84,17 +89,6 @@ export class AssetLoader {
         );
       }
 
-      loads.push(
-        loadOptionalImage(BG_PATH).then((img) => {
-          this.background = img;
-        }),
-      );
-
-      loads.push(
-        loadOptionalImage(FRAME_PATH).then((img) => {
-          this.boardFrame = img;
-        }),
-      );
     }
 
     await Promise.all(loads);
