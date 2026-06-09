@@ -20,23 +20,29 @@ export interface LoadedPieceImage {
 /** false = 纯程序生成界面；true = 加载 public/assets 下的用户图片 */
 export const USE_CUSTOM_ART = false;
 
+/** Vite base，GitHub Pages 为 /Match-3-Puzzle/，本地为 / */
+function assetUrl(relativePath: string): string {
+  const base = import.meta.env.BASE_URL;
+  return `${base}${relativePath.replace(/^\//, "")}`;
+}
+
 const RUNE_PATHS: Partial<Record<PieceType, string>> = {
-  [PieceType.Fire]: "/assets/runes/fire.png",
-  [PieceType.Water]: "/assets/runes/water.png",
-  [PieceType.Nature]: "/assets/runes/nature.png",
-  [PieceType.Lightning]: "/assets/runes/lightning.png",
-  [PieceType.Light]: "/assets/runes/light.png",
-  [PieceType.Shadow]: "/assets/runes/shadow.png",
+  [PieceType.Fire]: assetUrl("assets/runes/fire.png"),
+  [PieceType.Water]: assetUrl("assets/runes/water.png"),
+  [PieceType.Nature]: assetUrl("assets/runes/nature.png"),
+  [PieceType.Lightning]: assetUrl("assets/runes/lightning.png"),
+  [PieceType.Light]: assetUrl("assets/runes/light.png"),
+  [PieceType.Shadow]: assetUrl("assets/runes/shadow.png"),
 };
 
 /** AI 生成的道具图，始终加载（不依赖 USE_CUSTOM_ART） */
 const SPECIAL_PATHS: Partial<Record<PieceType, string>> = {
-  [PieceType.Bomb]: "/assets/special/bomb.png",
-  [PieceType.Ice]: "/assets/special/ice.png",
+  [PieceType.Bomb]: assetUrl("assets/special/bomb.png"),
+  [PieceType.Ice]: assetUrl("assets/special/ice.png"),
 };
 
-const BG_PATH = "/assets/bg_main.png";
-const FRAME_PATH = "/assets/board_frame.png";
+const BG_PATH = assetUrl("assets/bg_main.png");
+const FRAME_PATH = assetUrl("assets/board_frame.png");
 
 export class AssetLoader {
   readonly runes = new Map<PieceType, HTMLImageElement>();
